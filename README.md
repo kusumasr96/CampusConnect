@@ -9,7 +9,30 @@ CampusConnect is a private college social network and academic activity manageme
 - **Academic Attendance Engine**: Attendance tracking with real-time automated notifications whenever a student's percentage drops below 75%.
 - **Schedules & Seating Allocation**: Private room & seat allocation view for students and automated venue clash checking across rooms and schedules.
 - **Admin Moderation & Audit Logs**: Upload CSV records, moderate posts, and inspect system audit logs.
+## 📂 Project Structure
 
+```text
+CampusConnect/
+├── backend/
+│   ├── src/
+│   │   ├── config/          # Database and environment configurations
+│   │   ├── controllers/     # Route logic & authentication controllers
+│   │   ├── db/              # PostgreSQL connection pool setup
+│   │   ├── middleware/      # JWT verification & role-based access guards
+│   │   └── routes/          # API endpoint routing definitions
+│   ├── .env.example         # Template for required environment variables
+│   ├── import-authorized-records.js # Script for importing whitelist CSVs
+│   ├── package.json         # Backend dependencies and scripts
+│   └── server.js            # Express application entry point
+├── frontend/
+│   ├── src/
+│   │   ├── components/      # Reusable UI components & navigation bars
+│   │   ├── pages/           # Student, Teacher, and Admin views
+│   │   ├── App.tsx          # Main component with protected routing
+│   │   └── main.tsx         # React DOM mounting entry
+│   ├── package.json         # Frontend dependencies and scripts
+│   └── vite.config.ts       # Vite bundler configuration
+└── README.md                # Project documentation
 ## Setup Instructions
 
 ### 1. Database (PostgreSQL)
