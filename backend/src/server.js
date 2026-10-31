@@ -5,7 +5,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-require('dotenv').config();
+require('./config/loadEnv');
 
 const authRoutes = require('./routes/auth');
 const postRoutes = require('./routes/posts');

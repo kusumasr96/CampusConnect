@@ -1,0 +1,6 @@
+.env
+/backend/*.csv
+node_modules/
+.env
+dist/
+.vite/
