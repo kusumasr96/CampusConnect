@@ -49,5 +49,6 @@ router.get('/profile/:userId', authenticateToken, postController.getProfileFeed)
 router.get('/:postId/comments', authenticateToken, postController.getComments);
 router.post('/:postId/comments', authenticateToken, postController.createComment);
 router.post('/:postId/like', authenticateToken, postController.toggleLike);
+router.delete('/:postId', authenticateToken, postController.deletePost);
 
 module.exports = router;

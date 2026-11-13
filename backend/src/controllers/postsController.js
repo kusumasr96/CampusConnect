@@ -196,6 +196,27 @@ exports.getProfileFeed = async (req, res) => {
   }
 };
 
+exports.deletePost = async (req, res) => {
+  const { postId } = req.params;
+  if (!uuidPattern.test(postId)) {
+    return res.status(400).json({ error: 'Invalid post ID' });
+  }
+
+  try {
+    const result = await db.query(
+      'DELETE FROM posts WHERE id = $1 AND user_id = $2 RETURNING id',
+      [postId, req.user.id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    return res.json({ message: 'Post deleted' });
+  } catch (error) {
+    console.error('Delete Post Error:', error);
+    return res.status(500).json({ error: 'Failed to delete post' });
+  }
+};
+
 exports.toggleLike = async (req, res) => {
   const { postId } = req.params;
   if (!uuidPattern.test(postId)) {
