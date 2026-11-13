@@ -92,6 +92,7 @@ export default function Feed({ user }) {
   const [commentError, setCommentError] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [likingPostIds, setLikingPostIds] = useState(() => new Set());
+  const [deletingPostIds, setDeletingPostIds] = useState(() => new Set());
 
   const loadFeed = useCallback(async (signal) => {
     setLoading(true);
@@ -206,6 +207,23 @@ export default function Feed({ user }) {
       setLikingPostIds((current) => {
         const next = new Set(current);
         next.delete(post.id);
+        return next;
+      });
+    }
+  };
+
+  const handleDelete = async (postId) => {
+    if (deletingPostIds.has(postId)) return;
+    setDeletingPostIds((current) => new Set(current).add(postId));
+    try {
+      await request(`/posts/${encodeURIComponent(postId)}`, { method: 'DELETE' });
+      setPosts((current) => current.filter((post) => post.id !== postId));
+    } catch (error) {
+      setFeedError(error.message);
+    } finally {
+      setDeletingPostIds((current) => {
+        const next = new Set(current);
+        next.delete(postId);
         return next;
       });
     }
@@ -347,9 +365,21 @@ export default function Feed({ user }) {
                     </p>
                   </div>
                 </div>
-                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700">
-                  <Tag className="h-3.5 w-3.5" />{post.category}
-                </span>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700">
+                    <Tag className="h-3.5 w-3.5" />{post.category}
+                  </span>
+                  {user?.id && String(user.id) === String(post.user_id) && (
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(post.id)}
+                      disabled={deletingPostIds.has(post.id)}
+                      className="rounded px-2 py-1 text-sm font-medium text-red-500 hover:bg-red-50 hover:text-red-700 disabled:opacity-60"
+                    >
+                      {deletingPostIds.has(post.id) ? 'Deleting...' : 'Delete'}
+                    </button>
+                  )}
+                </div>
               </div>
 
               <PostMedia post={post} />
