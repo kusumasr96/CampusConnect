@@ -44,7 +44,8 @@ const createTokens = (user) => {
     id: user.id,
     email: user.college_email,
     username: user.username,
-    role: user.role
+    role: user.role,
+    avatar_url: user.avatar_url || null
   };
 
   return {
@@ -193,7 +194,7 @@ exports.refresh = async (req, res) => {
 
   try {
     const userResult = await db.query(
-      'SELECT id, username, college_email, role FROM users WHERE id = $1 AND is_active = TRUE',
+      'SELECT id, username, college_email, role, avatar_url FROM users WHERE id = $1 AND is_active = TRUE',
       [decoded.id]
     );
     if (userResult.rows.length === 0) {

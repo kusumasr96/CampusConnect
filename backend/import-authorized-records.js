@@ -153,25 +153,49 @@ async function importRecords(csvPaths) {
   try {
     await client.query('BEGIN');
     for (const record of normalizedRecords) {
-      await client.query(
-        `INSERT INTO authorized_records
-           (role, full_name, usn_or_employee_id, college_email, branch, semester, section, department)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [
-          record.role,
-          record.fullName,
-          record.employeeId,
-          record.email,
-          record.branch,
-          record.semester,
-          record.section,
-          record.department,
-        ],
+      const values = [
+        record.role,
+        record.fullName,
+        record.employeeId,
+        record.email,
+        record.branch,
+        record.semester,
+        record.section,
+        record.department,
+      ];
+      const existing = await client.query(
+        `SELECT id
+         FROM authorized_records
+         WHERE LOWER(college_email) = $1 OR usn_or_employee_id = $2
+         FOR UPDATE`,
+        [record.email, record.employeeId],
       );
+
+      if (existing.rows.length > 1) {
+        throw new Error('A record matches different existing emails and IDs.');
+      }
+
+      if (existing.rows.length === 1) {
+        await client.query(
+          `UPDATE authorized_records
+           SET role = $1, full_name = $2, usn_or_employee_id = $3, college_email = $4,
+               branch = $5, semester = $6, section = $7, department = $8
+           WHERE id = $9`,
+          [...values, existing.rows[0].id],
+        );
+      } else {
+        await client.query(
+          `INSERT INTO authorized_records
+             (role, full_name, usn_or_employee_id, college_email, branch, semester, section, department)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          values,
+        );
+      }
     }
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
+    if (!error.code) throw error;
     if (error.code === '23505') {
       throw new Error('A record conflicts with an existing email or ID. No records were imported.');
     }
@@ -185,22 +209,22 @@ async function importRecords(csvPaths) {
 
 if (require.main === module) {
   const csvPaths = process.argv.slice(2);
-  if (csvPaths.length === 0) {
-    console.error('Usage: node import-authorized-records.js <path-to-csv> [path-to-csv ...]');
-    process.exitCode = 1;
-    db.pool.end();
-  } else {
-    importRecords(csvPaths)
-      .then(async (count) => {
-        console.log(`Imported ${count} authorized records.`);
-        await db.pool.end();
-      })
-      .catch(async (error) => {
-        console.error(error.message);
-        await db.pool.end();
-        process.exitCode = 1;
-      });
-  }
+  const filesToImport = csvPaths.length > 0
+    ? csvPaths
+    : ['student.csv', 'teacher.csv', 'admin.csv'].map((filename) =>
+        path.join(__dirname, filename),
+      );
+
+  importRecords(filesToImport)
+    .then(async (count) => {
+      console.log(`Imported ${count} authorized records.`);
+      await db.pool.end();
+    })
+    .catch(async (error) => {
+      console.error(error.message);
+      await db.pool.end();
+      process.exitCode = 1;
+    });
 }
 
 module.exports = { importRecords, inferRoleFromFilename, parseCsv, validateRecords };

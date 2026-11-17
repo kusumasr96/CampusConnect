@@ -85,7 +85,7 @@ const buildFeedQuery = (userId, category, profileId, limit, offset) => {
   return {
     text: `
       SELECT p.id, p.user_id, p.media_url, p.media_type, p.caption, p.category, p.created_at,
-             u.username, u.role,
+             u.username, u.role, u.avatar_url,
              (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id)::int AS likes_count,
              (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comments_count,
              EXISTS(SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $1) AS user_has_liked
@@ -204,8 +204,10 @@ exports.deletePost = async (req, res) => {
 
   try {
     const result = await db.query(
-      'DELETE FROM posts WHERE id = $1 AND user_id = $2 RETURNING id',
-      [postId, req.user.id]
+      `DELETE FROM posts
+       WHERE id = $1 AND ($2::boolean OR user_id = $3)
+       RETURNING id`,
+      [postId, req.user.role === 'Admin', req.user.id]
     );
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Post not found' });

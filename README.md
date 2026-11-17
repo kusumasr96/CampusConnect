@@ -3,12 +3,12 @@
 CampusConnect is a private college social network and academic activity management system built according to the System Architecture and Functional Specification.
 
 ## Key Features
-- **CSV-Gated Registration**: Only emails whitelisted in `students.csv`, `teachers.csv`, or `admins.csv` can register.
+- **CSV-Gated Registration**: Only emails whitelisted in `student.csv`, `teacher.csv`, or `admin.csv` can register.
 - **Strict Server-Side RBAC**: Role-based access control tokens (JWT) with separate permissions for Students, Teachers, and Admins.
 - **Instagram-Style Talent Feed**: Mandatory media categories (`Dance`, `Singing`, `Painting`, `Technical`, `Photography`, `Others`), likes, and comments.
 - **Academic Attendance Engine**: Attendance tracking with real-time automated notifications whenever a student's percentage drops below 75%.
 - **Schedules & Seating Allocation**: Private room & seat allocation view for students and automated venue clash checking across rooms and schedules.
-- **Admin Moderation & Audit Logs**: Upload CSV records, moderate posts, and inspect system audit logs.
+- **Role-Based Campus Tools**: Admin account directory, feed moderation, college-wide notifications, and 2024-batch timetable uploads; teacher event creation and student/teacher private messaging; student event and timetable browsing.
 ## 📂 Project Structure
 
 ```text
@@ -58,13 +58,14 @@ name,email,usn_or_employee_id
 The importer infers each role from the exact filenames `student.csv`,
 `teacher.csv`, and `admin.csv`. It accepts `name`/`email` or the database-style
 `full_name`/`college_email` headers. The IDs must be the actual college USN or
-employee IDs, not generated values. Import all files together using the paths
-to your local roster files:
+employee IDs, not generated values. Put all three CSVs in `backend/` and run:
 
 ```powershell
-node import-authorized-records.js "C:\path\to\admin.csv" "C:\path\to\teacher.csv" "C:\path\to\student.csv"
+npm run db:import-authorized-records
 ```
 
+You can also pass one or more explicit CSV paths to
+`node import-authorized-records.js`.
 The import validates the entire file and uses a transaction; invalid rows or
 conflicts with existing records prevent the import. After a successful import,
 register using the exact email and role from the roster, then log in with that
@@ -76,6 +77,22 @@ cd backend
 npm install
 npm run dev
 ```
+
+### Role-based features
+
+Sign in to use the role-specific dashboard and navigation. Admins can view the
+registered-user directory, moderate any feed post, broadcast notifications to
+active students and teachers, and upload exam, test, or class timetable
+documents for the 2024 batch. Teachers can publish events with a PDF brochure
+and start private message threads with students. Students can browse events
+and filter 2024-batch timetables; students can reply only in teacher-started
+threads. Both students and teachers can update their profile pictures and use
+the inbox.
+
+Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and
+`CLOUDINARY_API_SECRET` in `backend/.env` to enable media, timetable, event
+brochure, and profile-picture uploads. The database setup script applies the
+additive event and timetable-upload schema used by these features.
 
 ### 3. Frontend App
 ```bash

@@ -5,12 +5,17 @@ import Register from './pages/Register';
 import Feed from './pages/Feed';
 import Attendance from './pages/Attendance';
 import Schedule from './pages/Schedule';
+import AdminDashboard from './pages/AdminDashboard';
+import CampusDashboard from './pages/CampusDashboard';
+import Events from './pages/Events';
+import Inbox from './pages/Inbox';
+import Profile from './pages/Profile';
 import Navbar from './components/Navbar';
 
 const ROLE_HOME = {
-  Student: '/schedule',
+  Student: '/campus',
   Teacher: '/attendance',
-  Admin: '/feed'
+  Admin: '/admin'
 };
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -79,9 +84,14 @@ export default function App() {
                 <Route path="/login" element={!user ? <Login onLogin={handleLogin} /> : <Navigate to={ROLE_HOME[user.role] || '/feed'} replace />} />
                 <Route path="/register" element={!user ? <Register /> : <Navigate to={ROLE_HOME[user.role] || '/feed'} replace />} />
                 <Route path="/feed" element={user ? <Feed user={user} /> : <Navigate to="/login" replace />} />
-                <Route path="/" element={<Navigate to={user ? '/feed' : '/login'} replace />} />
+                <Route path="/" element={<Navigate to={user ? ROLE_HOME[user.role] || '/feed' : '/login'} replace />} />
                 <Route path="/attendance" element={user ? <Attendance user={user} /> : <Navigate to="/login" replace />} />
-                <Route path="/schedule" element={user ? <Schedule user={user} /> : <Navigate to="/login" replace />} />
+                <Route path="/schedule" element={user?.role === 'Student' ? <Schedule user={user} /> : <Navigate to={user ? ROLE_HOME[user.role] || '/feed' : '/login'} replace />} />
+                <Route path="/campus" element={user?.role === 'Student' ? <CampusDashboard /> : <Navigate to={user ? ROLE_HOME[user.role] || '/feed' : '/login'} replace />} />
+                <Route path="/admin" element={user?.role === 'Admin' ? <AdminDashboard /> : <Navigate to={user ? ROLE_HOME[user.role] || '/feed' : '/login'} replace />} />
+                <Route path="/events" element={user?.role === 'Teacher' ? <Events /> : <Navigate to={user ? ROLE_HOME[user.role] || '/feed' : '/login'} replace />} />
+                <Route path="/messages" element={user && ['Teacher', 'Student'].includes(user.role) ? <Inbox user={user} /> : <Navigate to={user ? ROLE_HOME[user.role] || '/feed' : '/login'} replace />} />
+                <Route path="/profile" element={user && ['Teacher', 'Student'].includes(user.role) ? <Profile /> : <Navigate to={user ? ROLE_HOME[user.role] || '/feed' : '/login'} replace />} />
                 <Route path="*" element={<Navigate to={user ? '/feed' : '/login'} replace />} />
               </Routes>
             </>

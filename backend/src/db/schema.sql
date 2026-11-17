@@ -170,7 +170,24 @@ CREATE TABLE IF NOT EXISTS events (
     end_time TIME NOT NULL,
     venue VARCHAR(100) NOT NULL,
     description TEXT,
+    registration_link TEXT,
+    brochure_url TEXT,
     created_by UUID REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE events ADD COLUMN IF NOT EXISTS registration_link TEXT;
+ALTER TABLE events ADD COLUMN IF NOT EXISTS brochure_url TEXT;
+
+CREATE TABLE IF NOT EXISTS timetable_uploads (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(150) NOT NULL,
+    type VARCHAR(20) NOT NULL CHECK (type IN ('exam', 'test', 'class')),
+    batch_year INT NOT NULL CHECK (batch_year = 2024),
+    semester INT NOT NULL CHECK (semester > 0),
+    file_url TEXT NOT NULL,
+    file_type VARCHAR(100) NOT NULL,
+    uploaded_by UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -236,6 +253,8 @@ CREATE INDEX IF NOT EXISTS attendance_subject_date_idx
     ON attendance (subject_id, date);
 CREATE INDEX IF NOT EXISTS schedule_room_date_time_idx
     ON schedule (room_id, date, start_time, end_time);
+CREATE INDEX IF NOT EXISTS timetable_uploads_batch_semester_type_idx
+    ON timetable_uploads (batch_year, semester, type, created_at DESC);
 CREATE INDEX IF NOT EXISTS exam_seating_student_schedule_idx
     ON exam_seating (student_id, schedule_id);
 CREATE INDEX IF NOT EXISTS comments_post_created_at_idx

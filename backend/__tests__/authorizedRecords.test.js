@@ -36,7 +36,7 @@ describe('authorized record CSV import', () => {
 
   test('maps name/email headers and infers role from a role-specific CSV filename', () => {
     const records = parseCsv(
-      'name,email,usn_or_employee_id\nExample Student,student@example.edu,STU-001',
+      'name,email,usn_or_employee_id\n Example Student , Student@Example.edu ,STU-001',
       inferRoleFromFilename('student.csv'),
     );
     const { normalizedRecords, errors } = validateRecords(records);

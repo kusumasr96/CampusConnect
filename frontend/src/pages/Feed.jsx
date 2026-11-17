@@ -271,7 +271,7 @@ export default function Feed({ user }) {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5 pb-12">
+    <div className="mx-auto min-w-0 max-w-2xl space-y-5 overflow-x-hidden pb-12">
       <header className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600">CampusConnect</p>
@@ -354,9 +354,13 @@ export default function Feed({ user }) {
             <article key={post.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
               <div className="flex items-center justify-between gap-3 px-4 py-3.5 sm:px-5">
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-700">
-                    {initials(post.username)}
-                  </div>
+                  {post.avatar_url ? (
+                    <img src={post.avatar_url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                  ) : (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-700">
+                      {initials(post.username)}
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-slate-900">{post.username || 'Campus member'}</p>
                     <p className="text-xs text-slate-500">
@@ -369,7 +373,7 @@ export default function Feed({ user }) {
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700">
                     <Tag className="h-3.5 w-3.5" />{post.category}
                   </span>
-                  {user?.id && String(user.id) === String(post.user_id) && (
+                  {user?.id && (user.role === 'Admin' || String(user.id) === String(post.user_id)) && (
                     <button
                       type="button"
                       onClick={() => handleDelete(post.id)}
